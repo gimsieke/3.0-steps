@@ -8,7 +8,7 @@
       <p:output port="result" primary="true" content-types="xml html"/>
       <p:output port="report" content-types="application/xml json"/>
       <p:option name="assert-valid" select="true()" as="xs:boolean"/>
-      <p:option name="report-format" select="'XVRL'" as="xs:string"/>
+      <p:option name="report-format" select="'xvrl'" as="xs:string"/>
       <p:option name="parameters" as="xs:string"/>
    </p:declare-step>
    <p:declare-step type="p:validate-with-relax-ng" xml:id="validate-with-relax-ng">
@@ -19,7 +19,7 @@
       <p:option name="dtd-attribute-values" select="false()" as="xs:boolean"/>
       <p:option name="dtd-id-idref-warnings" select="false()" as="xs:boolean"/>
       <p:option name="assert-valid" select="true()" as="xs:boolean"/>
-      <p:option name="report-format" select="'XVRL'" as="xs:string"/>
+      <p:option name="report-format" select="'xvrl'" as="xs:string"/>
       <p:option name="parameters" as="xs:string"/>
    </p:declare-step>
    <p:declare-step type="p:validate-with-schematron" xml:id="validate-with-schematron">
@@ -30,7 +30,7 @@
       <p:option name="parameters" as="xs:string"/>
       <p:option name="phase" select="'#DEFAULT'" as="xs:string"/>
       <p:option name="assert-valid" select="true()" as="xs:boolean"/>
-      <p:option name="report-format" select="'XVRL'" as="xs:string"/>
+      <p:option name="report-format" select="'svrl'" as="xs:string"/>
    </p:declare-step>
    <p:declare-step type="p:validate-with-xml-schema" xml:id="validate-with-xml-schema">
       <p:input port="source" primary="true" content-types="xml html"/>
@@ -46,6 +46,6 @@
                 as="xs:token"
                 values="('strict','lax')"/>
       <p:option name="version" as="xs:string?"/>
-      <p:option name="report-format" select="'XVRL'" as="xs:string"/>
+      <p:option name="report-format" select="'xvrl'" as="xs:string"/>
    </p:declare-step>
 </p:library>
