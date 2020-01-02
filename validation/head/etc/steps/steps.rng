@@ -197,6 +197,13 @@
           <data type="string"/>
         </attribute>
       </optional>
+      <optional>
+        <attribute name="relative-to">
+          <optional>
+            <data type="anyURI"/>
+          </optional>
+        </attribute>
+      </optional>
       <interleave>
         <zeroOrMore>
           <ref name="WithInput"/>
@@ -1315,6 +1322,9 @@
       </optional>
       <interleave>
         <zeroOrMore>
+          <ref name="WithInput"/>
+        </zeroOrMore>
+        <zeroOrMore>
           <ref name="WithOption"/>
         </zeroOrMore>
         <zeroOrMore>
@@ -1494,6 +1504,13 @@
       <optional>
         <attribute name="parameters">
           <data type="string"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="relative-to">
+          <optional>
+            <data type="anyURI"/>
+          </optional>
         </attribute>
       </optional>
       <interleave>

@@ -48,6 +48,7 @@ Step-archive-manifest =
     step.attributes,
     attribute format { xsd:QName? }?,
     attribute parameters { xsd:string }?,
+    attribute relative-to { xsd:anyURI? }?,
     (WithInput* & WithOption* & (Documentation|PipeInfo)*)
   }
 
@@ -384,7 +385,7 @@ Step-text-join =
     attribute prefix { xsd:string? }?,
     attribute suffix { xsd:string? }?,
     attribute override-content-type { xsd:string? }?,
-    (WithOption* & (Documentation|PipeInfo)*)
+    (WithInput* & WithOption* & (Documentation|PipeInfo)*)
   }
 
 Step-text-replace =
@@ -434,6 +435,7 @@ Step-unarchive =
     attribute exclude-filter { xsd:string }?,
     attribute format { xsd:QName? }?,
     attribute parameters { xsd:string }?,
+    attribute relative-to { xsd:anyURI? }?,
     (WithInput* & WithOption* & (Documentation|PipeInfo)*)
   }
 
