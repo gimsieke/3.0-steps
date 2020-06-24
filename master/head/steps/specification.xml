@@ -166,6 +166,15 @@ compatible versions.</para>
         <rfc2119>should</rfc2119>, <rfc2119>should not</rfc2119>, <rfc2119>may</rfc2119> and
         <rfc2119>recommended</rfc2119> are to be interpreted as described in <biblioref linkend="rfc2119"/>.</para>
 
+<para>As described in <xspecref spec="xproc" xref="psvi-support"/>,
+steps may not produce PSVI output unless that behavior is explicitly
+described. In this specification, the steps that may produce PSVI
+output are the “identity” steps: <tag>p:identity</tag>,
+<tag>p:store</tag>, and <tag>p:split-sequence</tag> (which <rfc2119>must</rfc2119> preserve 
+PSVI properties that appear on their inputs). In addition, the
+<tag>p:xslt</tag> and <tag>p:xquery</tag> steps <rfc2119>may</rfc2119> return documents with
+PSVI annotations.</para>
+
 </section>
 
 <section xml:id="req-steps">
@@ -502,10 +511,7 @@ element's [base URI].</para>
         <listitem>
         <para>If no document on the <port>source</port> port has a base URI that is exactly the same
         as the (absolute) <code>href</code> value, the document at the specified URI is associated
-        with this entry. If this entry is to be added to the archive, the document must be obtained
-        by dereferencing the URI. <error code="D0011">It is a <glossterm>dynamic error</glossterm>
-        if the resource referenced by the <option>href</option> option does not exist, cannot be
-        accessed or is not a file.</error> These documents are stored in the archive “as is”; they
+        with this entry. These documents are stored in the archive “as is”; they
         <rfc2119>must not</rfc2119> be parsed and re-serialized.</para>
         </listitem>
         </itemizedlist>
@@ -656,7 +662,10 @@ element's [base URI].</para>
                 the ZIP archive will be created. Creating a ZIP archive behaves exactly like
                 <literal>update</literal> except that any timestamps
                 are ignored; every ZIP entry will be updated or created if there is a <tag>c:entry</tag> or
-                matching document for it.</para>
+                  matching document for it. The document must be obtained by dereferencing the URI in 
+                  <option>href</option>. <error code="D0011">It is a <glossterm>dynamic error</glossterm>
+                    if the resource referenced by the <option>href</option> option does not exist, cannot be
+                    accessed or is not a file.</error></para>
               </listitem>
             </varlistentry>
             <varlistentry>
@@ -1553,7 +1562,12 @@ converted to lowercase.</para>
 
   <para>If a single document appears on the <port>source</port> port,
   then document properties on that document may be added as additional
-  headers. Properties in the <code>http://www.w3.org/ns/xproc-http</code>
+  headers. For XML, HTML, and text documents with a 
+  <literal>serialization</literal> document property having an 
+    <literal>encoding</literal> key, a <literal>charset</literal> is
+    appended to the created <literal>content-type</literal> header of
+    the HTTP request.
+  Properties in the <code>http://www.w3.org/ns/xproc-http</code>
   namespace will be added to the headers, using the local-name of the
   property QName as the header name. These properties are only copied
   if they are not specified in the <option>header</option> map. In
@@ -1711,7 +1725,11 @@ converted to lowercase.</para>
       response. If the “<literal>override-content-type</literal>”
       parameter is provided, then its value is used to interpret the
       body. The content-type header that appears on the
-      <port>report</port> port is not changed. <error code="C0030">It
+        <port>report</port> port is not changed. 
+        <error code="D0079">It is a <glossterm>dynamic error</glossterm> if a supplied content-type is not 
+          a valid media type of the form 
+          “<literal><replaceable>type</replaceable>/<replaceable>subtype</replaceable>+<replaceable>ext</replaceable></literal>” 
+          or “<literal><replaceable>type</replaceable>/<replaceable>subtype</replaceable></literal>”.</error> <error code="C0030">It
       is a <glossterm>dynamic error</glossterm> if the response body cannot
       be interpreted as requested (e.g. <literal>application/json</literal>
       to override <literal>application/xml</literal> content).</error></para>
@@ -2213,10 +2231,10 @@ remains the same.</para>
 <title>p:load</title>
 
 <para>The <code>p:load</code> step has no inputs but produces as its
-result a document (or documents) specified by an IRI.</para>
+result a document specified by an IRI.</para>
 
 <p:declare-step type="p:load">
-  <p:output port="result" sequence="true" content-types="any"/>
+  <p:output port="result" content-types="any"/>
   <p:option name="href" required="true" as="xs:anyURI"/>
   <p:option name="parameters" as="map(xs:QName,item()*)?"/>
   <p:option name="content-type" as="xs:string?"/>
@@ -2231,8 +2249,8 @@ result a document (or documents) specified by an IRI.</para>
     shortcut value). <error code="D0064">It is a <glossterm>dynamic 
       error</glossterm> if the base URI is not both absolute and valid according to <biblioref linkend="rfc3986"/>.</error></para>
 
-<para>The document or documents identified by the
-<option>href</option> URI are loaded and returned. If the URI protocol
+<para>The document identified by the
+<option>href</option> URI is loaded and returned. If the URI protocol
 supports redirection, then redirects <rfc2119>must</rfc2119> be
 followed.</para>
 
@@ -2241,22 +2259,27 @@ if the resource referenced by a <code>p:load</code> element does not exist
 or cannot be accessed.</error></para>
 
 <para>The behavior of this step depends on the content type of the
-document or documents loaded. The content type of each document is
+document loaded. The content type of a document is
 determined as follows:</para>
 
 <orderedlist>
 <listitem>
 <para>If a <property>content-type</property> property is specified
 in <option>document-properties</option> or <option>content-type</option> is present,
-then each document <rfc2119>must</rfc2119> be interpreted according to
-that content type. <error code="D0062">It is a <glossterm>dynamic error</glossterm>
+then the document <rfc2119>must</rfc2119> be interpreted according to
+that content type.
+  <error code="D0079">It is a <glossterm>dynamic error</glossterm> if a supplied content-type is not 
+    a valid media type of the form 
+    “<literal><replaceable>type</replaceable>/<replaceable>subtype</replaceable>+<replaceable>ext</replaceable></literal>” 
+    or “<literal><replaceable>type</replaceable>/<replaceable>subtype</replaceable></literal>”.</error> 
+<error code="D0062">It is a <glossterm>dynamic error</glossterm>
 if the <tag class="attribute">content-type</tag> is specified and the
 document-properties has a “<code>content-type</code>” that is not the
 same.</error>
 </para>
 </listitem>
 <listitem>
-<para>If the documents are retrieved with a URI protocol that specifies
+<para>If the document is retrieved with a URI protocol that specifies
 a content type (for example, <literal>http:</literal>), then the document
 <rfc2119>must</rfc2119> be interpreted according to that content type.
 </para>
@@ -2827,9 +2850,9 @@ discards them. It has no output.</para>
 documents and divides it into two sequences.</para>
 
 <p:declare-step type="p:split-sequence">
-  <p:input port="source" content-types="xml html" sequence="true"/>
-  <p:output port="matched" sequence="true" primary="true" content-types="xml html"/>
-  <p:output port="not-matched" sequence="true" content-types="xml html"/>
+  <p:input port="source" content-types="any" sequence="true"/>
+  <p:output port="matched" sequence="true" primary="true" content-types="any"/>
+  <p:output port="not-matched" sequence="true" content-types="any"/>
   <p:option name="initial-only" as="xs:boolean" select="false()"/>
   <p:option name="test" required="true" as="xs:string" e:type="XPathExpression"/>
 </p:declare-step>
@@ -2857,7 +2880,10 @@ appears on the <code>source</code> port, the expression is evaluated
 with that document as the context document. The context position
 (<code>position()</code>) is the position of that document within the
 sequence and the context size (<code>last()</code>) is the total
-number of documents in the sequence.</para>
+number of documents in the sequence. <error code="C0150">It is a 
+<glossterm>dynamic error</glossterm> if evaluating the XPath expression
+in option <option>test</option> on a context document results
+in an error.</error></para>
 
 <note xml:id="note-stream">
 <para>In principle, this component cannot stream because it must
@@ -2880,9 +2906,10 @@ any annotations that appear in the input.</para>
 <title>p:store</title>
 
 <para>The <tag>p:store</tag> step stores (a possibly serialized
-version of) its input to a URI. The input is copied to the <port>result</port>
-port. Additionally this step outputs a reference to the
-location of the stored document on the <port>result-uri</port> port.</para>
+version of) its input to a URI. It outputs a reference to the location
+of the stored document on the <port>result-uri</port> port.
+Aside from these side-effects, it behaves like a <tag>p:identity</tag>
+step, copying its input to the <port>result</port> port.</para>
 
 <p:declare-step type="p:store">
   <p:input port="source" content-types="any"/>
@@ -3983,6 +4010,7 @@ establish a base URI, the document will not have one.
     <p:option name="parameters" as="map(xs:QName,item()*)?"/>
     <p:option name="static-parameters" as="map(xs:QName,item()*)?"/>
     <p:option name="global-context-item" as="item()?"/>
+    <p:option name="populate-default-collection" as="xs:boolean?" select="true()"/>
     <p:option name="initial-mode" as="xs:QName?"/>
     <p:option name="template-name" as="xs:QName?"/>
     <p:option name="output-base-uri" as="xs:anyURI?"/>
@@ -4002,9 +4030,9 @@ establish a base URI, the document will not have one.
     static analysis of the XSLT stylesheet.</error> Any parameters passed in the
     <option>parameters</option> option are used to define top-level stylesheet parameters.</para>
   <para>Parameters passed in the <option>static-parameters</option> option are passed as static
-    parameters to the XSLT invocation. Whether static parameters are supported is
+    parameters to the XSLT invocation. <impl>Whether static parameters are supported is
       <glossterm>implementation-defined</glossterm> and depends on the XSLT version (which must be
-    3.0 or higher). If static parameters are not supported the option is ignored.</para>
+    3.0 or higher).</impl> If static parameters are not supported the option is ignored.</para>
   <para><error code="C0095">It is a <glossterm>dynamic error</glossterm> if an error occurred during
     the transformation.</error>
     <error code="C0096">It is a <glossterm>dynamic error</glossterm> if the transformation is
@@ -4018,11 +4046,24 @@ establish a base URI, the document will not have one.
     PSVI annotations.</para>
   <para>The interpretation of the input and output ports as well as for the other options depends on
     the selected XSLT version.</para>
+  
   <section>
     <title>Invoking an XSLT 3.0 stylesheet</title>
     <para>The value of <option>global-context-item</option> is used as global context item for the
-      stylesheet invocation. If no value is supplied, the empty sequence is supplied to the
-      invocation.</para>
+      stylesheet invocation. If no value is supplied, the following applies:</para>
+    <itemizedlist>
+      <listitem>
+        <para>If there is a single document on the <port>source</port> port, this document will
+          become the value of the <option>global-context-item</option> option.</para>
+      </listitem>
+      <listitem>
+        <para>If there are none or multiple documents on the <port>source</port> port, the
+          global context item is absent.</para>
+      </listitem>
+    </itemizedlist>
+    <para>The <option>populate-default-collection</option> option is used to control whether all
+    the documents appearing on <port>source</port> port form the default collection for the XSLT
+    transformation.</para>
     <para>If no value is supplied for <option>template-name</option> option an “Apply-template
       invocation” is performed. The documents that appear on <port>source</port> are taken to be the
       initial match selection. The default collection is undefined. If a value is supplied for 
@@ -4067,7 +4108,10 @@ establish a base URI, the document will not have one.
       documents are provided on the <port>source</port> port, the initial context node is undefined
       and the default collection is empty. <error code="C0094">It is a <glossterm>dynamic
         error</glossterm> if any document supplied on the source port is not an XML document, an
-        HTML documents, or a Text document if XSLT 2.0 is used.</error></para> 
+        HTML documents, or a Text document if XSLT 2.0 is used.</error></para>
+    <para>The <option>populate-default-collection</option> option is used to control whether all
+      the documents appearing on <port>source</port> port form the default collection for the XSLT
+      transformation.</para>
     <para>The value of option <option>global-context-item</option> is ignored if a stylesheet is
       invoked as per XSLT 2.0. The invocation of the transformation is controlled by the
       <option>initial-mode</option> and <option>template-name</option> options that set the
@@ -4386,6 +4430,34 @@ draft:</para>
    </listitem>
    <listitem>
      <para>Replaced errors XC0070 and XC0130 with XD0079. (2020-04-09)</para>
+   </listitem>
+   <listitem>
+     <para>Changed signature of <tag>p:split-sequence</tag> so that any document can appear one port 
+       source. (2020-05-22)</para>
+   </listitem>
+   <listitem>
+     <para>Change the behavior of the <option>global-context-item</option> option of <tag>p:xslt</tag>. (2020-06-10)</para>
+   </listitem>
+   <listitem>
+     <para>Clarified which steps may produce PSVI annotations. (2020-06-09)</para>
+   </listitem>
+   <listitem>
+     <para>Clarified the behaviour in <tag>p:archive</tag>: A missing resource referenced by
+     c:archive/c:entry/@href is only an error for command = 'create'. (2020-06-11)</para>
+   </listitem>
+   <listitem>
+     <para>Option <option>populate-default-collection</option> is added to the signature of <tag>p:xslt</tag>. (2020-06-20)</para>
+   </listitem>
+   <listitem>
+     <para>Clarified how the default <literal>content-type</literal> header of <tag>p:http-request</tag> is 
+     constructed if a single document appears on <port>source</port> port. (2020-06-20)</para>
+   </listitem>
+   <listitem>
+     <para>Added error (XD0079) to <tag>p:http-request</tag> and <tag>p:load</tag> for invalid content-types. (2020-06-23)</para>
+   </listitem>
+   <listitem>
+     <para>Changed signature of the <port>result</port> port of <tag>p:load</tag> to <literal>sequence="false"</literal> and
+       adapted the prose accordingly. (2020-06-24)</para>
    </listitem>
  </orderedlist>
 </appendix>
